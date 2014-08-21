@@ -3,15 +3,17 @@
 #' @description Plot image TS chips based on a location, area buffer, and time buffer
 #' 
 #' @param x RasterBrick. Image time series brick
-#' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of nrow = 1 (the first row will be taken if nrow(loc) > 1), or an extent object (which will be extended if a buffer > 0 is given; see below)
+#' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)
 #' @param buff Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.
 #' @param start Date. OptionaL: earliest date ("yyyy-dd-mm") to display.
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param cols Character. Name of colour map to use (see display.brewer.all()) or a character vector with two or more colour names or hexadecimal values (as strings) between which to interpolate.
 #' @param nbks Numeric. Number of breaks in the colour map
-#' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than nc*nr, a screen prompt will lead to the next series of plots. These cannot exceed 4.
+#' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
+#' 
+#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
 #' 
 #' @author Ben DeVries
 #' 

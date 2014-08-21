@@ -9,7 +9,7 @@ tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
 \arguments{
 \item{x}{RasterBrick. Image time series brick}
 
-\item{loc}{Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of nrow = 1 (the first row will be taken if nrow(loc) > 1), or an extent object (which will be extended if a buffer > 0 is given; see below)}
+\item{loc}{Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)}
 
 \item{buff}{Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.}
 
@@ -23,9 +23,12 @@ tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
 
 \item{nbks}{Numeric. Number of breaks in the colour map}
 
-\item{nc/nr}{Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than nc*nr, a screen prompt will lead to the next series of plots. These cannot exceed 4.}
+\item{nc/nr}{Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.}
 
 \item{ggplot}{Logical. Produce a ggplot time series plot object?}
+}
+\value{
+\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
 }
 \description{
 Plot image TS chips based on a location, area buffer, and time buffer
