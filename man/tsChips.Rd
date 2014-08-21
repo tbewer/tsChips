@@ -48,6 +48,6 @@ tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01",
 Ben DeVries
 }
 \references{
-Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911–2924.
+Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 }
 
