@@ -70,7 +70,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   # start and end dates
   if(!is.null(start)){
     start <- as.Date(start)
-    xe <- subset(xe, subset = which(se$date >= start))
+    xe <- raster::subset(xe, subset = which(se$date >= start))
     se <- getSceneinfo(names(xe))
   } else {
     start <- as.Date(min(se$date)) # to be used in ggplot later
@@ -78,14 +78,14 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   
   if(!is.null(end)){
     end <- as.Date(end)
-    xe <- subset(xe, subset = which(se$date <= end))
+    xe <- raster::subset(xe, subset = which(se$date <= end))
     se <- getSceneinfo(names(xe))
   } else {
     end <- as.Date(max(se$date)) # to be used in ggplot later
   }
   
   # reorder scenes
-  xe <- subset(xe, subset = order(se$date))
+  xe <- raster::subset(xe, subset = order(se$date))
   se <- getSceneinfo(names(xe))
   
   # filter out scenes with too many NA's
@@ -95,9 +95,9 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   nas[which(sapply(nas, length) == 0)] <- 0
   nas <- unlist(nas)
   if(percNA == 0){
-    xe <- subset(xe, subset = which(nas == percNA))
+    xe <- raster::subset(xe, subset = which(nas == percNA))
   } else {
-    xe <- subset(xe, subset = which(nas < percNA))
+    xe <- raster::subset(xe, subset = which(nas < percNA))
   }
   
   # final sceneinfo data.frame
@@ -123,11 +123,11 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   nscreens <- ceiling(nlayers(xe) / pps)
   for(i in seq(1, nlayers(xe), by = pps)){
     if((nlayers(xe) - i) < pps){
-      xes <- subset(xe, subset = c(i:nlayers(xe)))
+      xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
       par(op)
       plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
     } else {
-      xes <- subset(xe, subset = c(i:(i + pps - 1)))
+      xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
       plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
       readline("Press any key to continue to next screen: \n")
     }
