@@ -162,7 +162,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
       require(rgeos)
       s$response <- x[gCentroid(loc)][1, ]
     }
-    p <- ggplot(data = s, aes(x = date, y = response)) + geom_point() + theme_bw() + scale_x_date(limits = c(start, end))
+    p <- ggplot(data = na.omit(s), aes(x = date, y = response)) + geom_point() + theme_bw() + scale_x_date(limits = c(start, end))
     readline("Press any key to view time series plot: \n")
     print(p)
   }
