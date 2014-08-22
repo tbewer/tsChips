@@ -59,6 +59,13 @@ tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = "Greens")
 
 tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("red", "yellow", "blue"))
 tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
+
+# draw a custom SpatialPoygons object and plot around that
+plot(tura, 6)
+pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done
+projection(pol) <- projection(tura)
+plot(tura, 6); plot(pol, add=TRUE)
+tsChips(tura, loc = pol, start = "1999-01-01", ggplot = TRUE)
 }
 }
 \author{

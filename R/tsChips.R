@@ -51,6 +51,13 @@
 #' 
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("red", "yellow", "blue"))
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
+#' 
+#' # draw a custom SpatialPoygons object and plot around that
+#' plot(tura, 6)
+#' pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done
+#' projection(pol) <- projection(tura)
+#' plot(tura, 6); plot(pol, add=TRUE)
+#' tsChips(tura, loc = pol, start = "1999-01-01", ggplot = TRUE)
 #' }
 
 
@@ -126,7 +133,16 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   } else {
     cols <- colorRampPalette(cols)(nbks)
   }
-  breaks <- seq(minValue(min(xe)), maxValue(max(xe)), length = nbks)
+  # breaks defined based on extreme values
+  minbk <- minValue(xe)
+  if(!any(!is.na(minbk)))
+    stop("No non-NA values in the defined image chips.")
+  minbk <- min(minbk)
+  maxbk <- maxValue(xe)
+  if(!any(!is.na(maxbk)))
+    stop("No non-NA values in the defined image chips.")
+  maxbk <- max(maxbk)
+  breaks <- seq(minbk, maxbk, length = nbks)
   
   # plots on separate screens if needed
   if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
