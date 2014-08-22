@@ -20,7 +20,6 @@
 #' @import bfastSpatial
 #' @import RColorBrewer
 #' @import ggplot2
-#' @import rgeos
 #' @export
 #' 
 #' @references
@@ -69,8 +68,8 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
   } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-    if(nrow(loc) > 1){
-      warning("only taking the 1st polygon of loc")
+    if(length(loc) > 1){
+      warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
     }
     e <- extent(loc)
@@ -159,8 +158,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     if(is.numeric(loc)){
       s$response <- x[cellFromXY(x, loc)][1, ]
     } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-      require(rgeos)
-      s$response <- x[gCentroid(loc)][1, ]
+      s$response <- apply(extract(x, loc)[[1]], 2, mean)
     }
     p <- ggplot(data = na.omit(s), aes(x = date, y = response)) + geom_point() + theme_bw() + scale_x_date(limits = c(start, end))
     readline("Press any key to view time series plot: \n")

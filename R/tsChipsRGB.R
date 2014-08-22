@@ -21,7 +21,6 @@
 #' @import bfastSpatial
 #' @import RColorBrewer
 #' @import ggplot2
-#' @import rgeos
 #' @import reshape2
 #' @export
 #' 
@@ -52,8 +51,8 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
   } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-    if(nrow(loc) > 1){
-      warning("only taking the 1st polygon of loc")
+    if(length(loc) > 1){
+      warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
     }
     e <- extent(loc)
@@ -193,10 +192,9 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       s$G <- x$G[cellFromXY(x$G, loc)][1, ]
       s$B <- x$B[cellFromXY(x$B, loc)][1, ]
     } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-      require(rgeos)
-      s$R <- x$R[gCentroid(loc)][1, ]
-      s$G <- x$G[gCentroid(loc)][1, ]
-      s$B <- x$B[gCentroid(loc)][1, ]
+      s$R <- apply(extract(x$R, loc)[[1]], 2, mean)
+      s$G <- apply(extract(x$G, loc)[[1]], 2, mean)
+      s$B <- apply(extract(x$B, loc)[[1]], 2, mean)
     }
     s <- na.omit(s)
     s <- melt(s, measure.vars = c("R", "G", "B"))
