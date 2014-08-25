@@ -2,6 +2,7 @@
 
 export(selectScenes)
 export(subsetScenes)
+export(subsetScenesPlot)
 export(tsChips)
 export(tsChipsRGB)
 import(RColorBrewer)

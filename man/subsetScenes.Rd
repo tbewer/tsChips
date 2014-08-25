@@ -3,11 +3,10 @@
 \alias{subsetScenes}
 \title{Subset Scenes}
 \usage{
-subsetScenes(obj, targ, padding = NULL, filename = "", verbose = TRUE,
-  ...)
+subsetScenes(x, targ, padding = NULL, filename = "", verbose = TRUE, ...)
 }
 \arguments{
-\item{obj}{A spatial object (polygon, or otherwise) to base the subset extent on}
+\item{x}{A spatial object (polygon, or otherwise) to base the subset extent on}
 
 \item{targ}{A character vector of filenames, or a list of raster layers to be subsetted}
 

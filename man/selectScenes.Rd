@@ -3,19 +3,19 @@
 \alias{selectScenes}
 \title{Select scenes from directory}
 \usage{
-selectScenes(obj, targ, padding = NULL, verbose = TRUE)
+selectScenes(x, targ, padding = NULL, verbose = TRUE)
 }
 \arguments{
-\item{obj}{The object whose extent will be checked. It can be a raster, spatial object, or an extent object}
+\item{x}{The object whose extent will be checked. It can be a raster, spatial object, or an extent object}
 
 \item{targ}{Either a character vector of image filenames or an object of type list containing images to be tested}
 
-\item{padding}{Numeric. Additional area surrounding the extent to be included. Units depend on the projection of obj}
+\item{padding}{Numeric. Additional area surrounding the extent to be included. Units depend on the projection of x}
 
 \item{verbose}{Logical. Send status reports to the console?}
 }
 \value{
-Either a character vector of filenames with overlapping extents if \code{is.character(targ)}, or a list of raster objects whose extents overlap with \code{obj} if \code{targ} is a spatial object.
+Either a character vector of filenames with overlapping extents if \code{is.character(targ)}, or a list of raster objects whose extents overlap with \code{x} if \code{targ} is a spatial object.
 }
 \description{
 Select scenes (filenames) from a directory wth extents overlapping that of a given spatial object

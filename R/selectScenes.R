@@ -2,12 +2,12 @@
 #' 
 #' @description Select scenes (filenames) from a directory wth extents overlapping that of a given spatial object
 #' 
-#' @param obj The object whose extent will be checked. It can be a raster, spatial object, or an extent object
+#' @param x The object whose extent will be checked. It can be a raster, spatial object, or an extent object
 #' @param targ Either a character vector of image filenames or an object of type list containing images to be tested
-#' @param padding Numeric. Additional area surrounding the extent to be included. Units depend on the projection of obj
+#' @param padding Numeric. Additional area surrounding the extent to be included. Units depend on the projection of x
 #' @param verbose Logical. Send status reports to the console?
 #' 
-#' @return Either a character vector of filenames with overlapping extents if \code{is.character(targ)}, or a list of raster objects whose extents overlap with \code{obj} if \code{targ} is a spatial object.
+#' @return Either a character vector of filenames with overlapping extents if \code{is.character(targ)}, or a list of raster objects whose extents overlap with \code{x} if \code{targ} is a spatial object.
 #' 
 #' @author Ben DeVries
 #' 
@@ -15,7 +15,7 @@
 #' @import sp
 #' @export
 
-selectScenes <- function(obj, targ, padding=NULL, verbose=TRUE)
+selectScenes <- function(x, targ, padding=NULL, verbose=TRUE)
 {
 
   # set padding (if not already done)
@@ -24,7 +24,7 @@ selectScenes <- function(obj, targ, padding=NULL, verbose=TRUE)
   }
   
   # adjust extent of the input object
-  e <- extent(obj)
+  e <- extent(x)
   e <- extent(c(xmin(e) - padding,
                 xmax(e) + padding,
                 ymin(e) - padding,
@@ -41,19 +41,19 @@ selectScenes <- function(obj, targ, padding=NULL, verbose=TRUE)
     for(i in 1:length(targ)){
       b <- raster(targ[i])
       
-      if(projection(b) != projection(obj)){
-        warning(targ[i], " projection does not match obj. ", targ[i], " skipped.\n")
+      if(projection(b) != projection(x)){
+        warning(targ[i], " projection does not match x. ", targ[i], " skipped.\n")
       }
       else{
         if(is.null(intersect(e, extent(b)))){
           fits[i] <- FALSE
           if(verbose){
-            cat(targ[i], " does not overlap with obj extent.\n")
+            cat(targ[i], " does not overlap with x extent.\n")
           }
         } else {
           fits[i] <- TRUE
           if(verbose){
-            cat(targ[i], " overlaps with obj extent. Added to list.\n")
+            cat(targ[i], " overlaps with x extent. Added to list.\n")
           }
         }
       }

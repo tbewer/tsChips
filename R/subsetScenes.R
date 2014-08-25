@@ -2,7 +2,7 @@
 #' 
 #' @description Subset scenes from a list or directory based on a given spatial object. Takes results of \code{selectScenes()} and subsets based on intersecting extents.
 #' 
-#' @param obj A spatial object (polygon, or otherwise) to base the subset extent on
+#' @param x A spatial object (polygon, or otherwise) to base the subset extent on
 #' @param targ A character vector of filenames, or a list of raster layers to be subsetted
 #' @param filename Character. Optional: If results are to be written to file, then a character vector of \code{length = length(targ)} should be provided. Not supported yet (leave blank, or it will return an error)
 #' @param verbose Logical. Print status messages to the console?
@@ -15,7 +15,7 @@
 #' @import sp
 #' @export
 
-subsetScenes <- function(obj, targ, padding=NULL, filename = "", verbose=TRUE, ...){
+subsetScenes <- function(x, targ, padding=NULL, filename = "", verbose=TRUE, ...){
   
   # set padding (if not already done)
   if(!is.numeric(padding)){
@@ -28,10 +28,10 @@ subsetScenes <- function(obj, targ, padding=NULL, filename = "", verbose=TRUE, .
   }
   
   # narrow down targ vector/list based on extent overlaps
-  targ <- selectScenes(obj, targ, padding=padding, verbose=verbose)
+  targ <- selectScenes(x, targ, padding=padding, verbose=verbose)
   
   # adjust extent of the input object
-  e <- extent(obj)
+  e <- extent(x)
   e <- extent(c(xmin(e) - padding,
                 xmax(e) + padding,
                 ymin(e) - padding,
