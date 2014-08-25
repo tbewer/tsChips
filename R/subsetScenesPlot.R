@@ -18,7 +18,7 @@
 
 subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
   
-  op <- par()
+  op <- par(mfrow = c(1, 1))
   scenes <- subsetScenes(...)
   
   for(i in 1:length(scenes)) {
