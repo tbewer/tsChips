@@ -147,7 +147,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   
   # plots on separate screens if needed
   if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-    addfun <- function() plot(loc, add=TRUE)
+    addfun <- function() plot(loc, extent = e, add=TRUE)
   } else {
     addfun <- function() NULL
   }
