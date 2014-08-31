@@ -21,13 +21,6 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
   op <- par(mfrow = c(1, 1))
   scenes <- subsetScenes(...)
   
-  # function to add spatial data (if present)
-  if(class(x) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-    addfun <- function() plot(x, add=TRUE)
-  } else {
-    addfun <- function() NULL
-  }
-  
   for(i in 1:length(scenes)) {
     if(nlayers(scenes[[i]]) >= 3){
       if(is.null(bands)) {
@@ -36,10 +29,16 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
         plotRGB(scenes[[i]], bands[1], bands[2], bands[3], stretch = stretch, addfun=addfun)
       }
     } else if(nlayers(scenes[[i]]) == 2){
-      plot(raster(scenes[[i]], 1), addfun=addfun)
+      plot(raster(scenes[[i]], 1))
     } else {
-      plot(scenes[[i]], addfun=addfun)
+      plot(scenes[[i]])
     }
+    
+    # function to add spatial data (if present)
+    if(class(x) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+      plot(x, add=TRUE)
+    }
+    
     readline("Press any key to continue to next screen: \n")
     par(op)
   }
