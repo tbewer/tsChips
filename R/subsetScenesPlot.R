@@ -24,9 +24,9 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
   for(i in 1:length(scenes)) {
     if(nlayers(scenes[[i]]) >= 3){
       if(is.null(bands)) {
-        plotRGB(scenes[[i]], 1, 2, 3, stretch = stretch, addfun=addfun)
+        plotRGB(scenes[[i]], 1, 2, 3, stretch = stretch)
       } else {
-        plotRGB(scenes[[i]], bands[1], bands[2], bands[3], stretch = stretch, addfun=addfun)
+        plotRGB(scenes[[i]], bands[1], bands[2], bands[3], stretch = stretch)
       }
     } else if(nlayers(scenes[[i]]) == 2){
       plot(raster(scenes[[i]], 1))
