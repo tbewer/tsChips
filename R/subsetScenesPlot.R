@@ -35,6 +35,7 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
     }
     
     # function to add spatial data (if present)
+    x <- list(...)[[1]]
     if(class(x) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
       plot(x, add=TRUE)
     }
