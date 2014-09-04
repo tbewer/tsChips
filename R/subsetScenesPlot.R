@@ -24,9 +24,9 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL, textcol = "white
   # get scene filenames
   ## TODO: replace this chunk with more elegant regex!
   fl <- sapply(scenes, FUN=function(x) x@file@name)
-  pos <- sapply(str, FUN=function(x) gregexpr("/", x))
+  pos <- sapply(fl, FUN=function(x) gregexpr("/", x))
   n <- sapply(pos, FUN=function(x) x[length(x)] + 1)
-  newfl <- substr(str, n, nchar(str))
+  newfl <- substr(fl, n, nchar(str))
   
   for(i in 1:length(scenes)) {
     if(nlayers(scenes[[i]]) >= 3){
