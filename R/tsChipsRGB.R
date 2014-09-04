@@ -117,7 +117,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   
   # reorder scenes
   for(i in 1:length(xe)){
-    xe[[i]] <- raster::subset(xe[[i]], subset = order(s$date))
+    xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
   }
   se <- getSceneinfo(names(xe[[1]]))
   
