@@ -16,10 +16,17 @@
 #' @export
 #' 
 
-subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
+subsetScenesPlot <- function(..., bands = NULL, stretch = NULL, textcol = "white") {
   
   op <- par(mfrow = c(1, 1))
   scenes <- subsetScenes(...)
+  
+  # get scene filenames
+  ## TODO: replace this chunk with more elegant regex!
+  fl <- sapply(scenes, FUN=function(x) x@file@name)
+  pos <- sapply(str, FUN=function(x) gregexpr("/", x))
+  n <- sapply(pos, FUN=function(x) x[length(x)] + 1)
+  newfl <- substr(str, n, nchar(str))
   
   for(i in 1:length(scenes)) {
     if(nlayers(scenes[[i]]) >= 3){
@@ -28,6 +35,7 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
       } else {
         plotRGB(scenes[[i]], bands[1], bands[2], bands[3], stretch = stretch)
       }
+      text(x = (xmin(extent(scenes[[i]])) + xmax(extent(scenes[[i]])))/2, y = ymin(extent(scenes[[i]])) + 2*res(scenes[[i]])[1], labels = newfl[i], col = textcol)
     } else if(nlayers(scenes[[i]]) == 2){
       plot(raster(scenes[[i]], 1))
     } else {
