@@ -33,6 +33,12 @@ subsetScenesPlot <- function(..., bands = NULL, stretch = NULL) {
     } else {
       plot(scenes[[i]])
     }
+    
+    # function to add spatial data (if present)
+    if(class(x) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+      plot(x, add=TRUE)
+    }
+    
     readline("Press any key to continue to next screen: \n")
     par(op)
   }
