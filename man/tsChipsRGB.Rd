@@ -10,7 +10,7 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 \arguments{
 \item{xr/xg/xb}{RasterBrick. Image time series bricks representing the red, green and blue channel, respectively}
 
-\item{loc}{Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)}
+\item{loc}{Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons or SpatialPoints object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)}
 
 \item{buff}{Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.}
 

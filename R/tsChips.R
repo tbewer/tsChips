@@ -3,7 +3,7 @@
 #' @description Plot image TS chips based on a location, area buffer, and time buffer
 #' 
 #' @param x RasterBrick. Image time series brick
-#' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)
+#' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons or SpatialPoints object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)
 #' @param buff Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.
 #' @param start Date. OptionaL: earliest date ("yyyy-dd-mm") to display.
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
@@ -72,10 +72,10 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   
   # check location format and make a buffered extent object
   if(class(loc) == "numeric" & length(loc) != 2){
-    stop("loc should be either a numeric vector of length 2 or a spatial object (polygon or extent).")
+    stop("loc should be either a numeric vector of length 2 or a spatial object (polygon, points or extent).")
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
-  } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+  } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
     if(length(loc) > 1){
       warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
@@ -146,7 +146,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   breaks <- seq(minbk, maxbk, length = nbks)
   
   # plots on separate screens if needed
-  if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+  if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
     addfun <- function() plot(loc, extent = e, add=TRUE)
   } else {
     addfun <- function() NULL
@@ -174,7 +174,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     require(ggplot2)
     if(is.numeric(loc)){
       s$response <- x[cellFromXY(x, loc)][1, ]
-    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
       s$response <- apply(extract(x, loc)[[1]], 2, mean)
     }
     p <- ggplot(data = na.omit(s), aes(x = date, y = response)) + geom_point() + theme_bw() + scale_x_date(limits = c(start, end))

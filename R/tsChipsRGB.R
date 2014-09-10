@@ -3,7 +3,7 @@
 #' @description Plot image TS chips from 3 raster bricks (as RGB composites) based on a location, area buffer, and time buffer
 #' 
 #' @param xr/xg/xb RasterBrick. Image time series bricks representing the red, green and blue channel, respectively
-#' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)
+#' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons or SpatialPoints object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)
 #' @param buff Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.
 #' @param start Date. OptionaL: earliest date ("yyyy-dd-mm") to display.
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
@@ -47,10 +47,10 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   
   # check location format and make a buffered extent object
   if(class(loc) == "numeric" & length(loc) != 2){
-    stop("loc should be either a numeric vector of length 2 or a spatial object (polygon or extent).")
+    stop("loc should be either a numeric vector of length 2 or a spatial object (polygon, points or extent).")
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
-  } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+  } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
     if(length(loc) > 1){
       warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
@@ -141,7 +141,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   
   
   # function to add spatial data (if present)
-  if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+  if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
     addfun <- function() plot(loc, add=TRUE)
   } else {
     addfun <- function() NULL
@@ -191,7 +191,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       s$R <- x$R[cellFromXY(x$R, loc)][1, ]
       s$G <- x$G[cellFromXY(x$G, loc)][1, ]
       s$B <- x$B[cellFromXY(x$B, loc)][1, ]
-    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
+    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
       s$R <- apply(extract(x$R, loc)[[1]], 2, mean)
       s$G <- apply(extract(x$G, loc)[[1]], 2, mean)
       s$B <- apply(extract(x$B, loc)[[1]], 2, mean)
