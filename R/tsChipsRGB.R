@@ -63,63 +63,39 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   }
   
   # crop input bricks
-  if(cores > 1) {
-    if(cores > 3)
-      cores <- 3
-    require(doMC)
-    registerDoMC(cores = cores)
-    xe <- foreach(i = 1:length(x)) %dopar% {
-      crop(x[[i]], e)
-    }
-    # start and end dates
-    if(!is.null(start)){
-      start <- as.Date(start)
-      xe <- foreach(i = 1:length(xe)) %dopar% {
-        raster::subset(xe[[i]], subset = which(s$date >= start))
-      }
-    } else {
-      start <- as.Date(min(s$date)) # to be used in ggplot later
-    }
-    if(!is.null(end)){
-      end <- as.Date(end)
-      xe <- foreach(i = 1:length(x)) %dopar% {
-        raster::subset(xe[[i]], subset = which(s$date <= end))
-      }
-    } else {
-      end <- as.Date(max(s$date)) # to be used in ggplot later
-    }    
+  xe <- vector("list", 3)
+  se <- list(s, s, s) # memory for # of scenes per band ts
+  for(i in 1:length(x)){
+    xe[[i]] <- crop(x[[i]], e)
+  }
   
+  # start and end dates
+  if(!is.null(start)){
+    start <- as.Date(start)
+    for(i in 1:length(xe)){
+      xe[[i]] <- raster::subset(xe[[i]], subset = which(se[[i]]$date >= start))
+      se[[i]] <- getSceneinfo(names(xe))
+    }
   } else {
-    
-    xe <- vector("list", 3)
+    start <- as.Date(min(s$date)) # to be used in ggplot later
+  }
+  if(!is.null(end)){
+    end <- as.Date(end)
     for(i in 1:length(x)){
-      xe[[i]] <- crop(x[[i]], e)
+      xe[[i]] <- raster::subset(xe[[i]], subset = which(se[[i]]$date <= end))
+      se[[i]] <- getSceneinfo(names(xe))
     }
-    # start and end dates
-    if(!is.null(start)){
-      start <- as.Date(start)
-      for(i in 1:length(xe)){
-        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date >= start))
-      }
-    } else {
-      start <- as.Date(min(s$date)) # to be used in ggplot later
-    }
-    if(!is.null(end)){
-      end <- as.Date(end)
-      for(i in 1:length(x)){
-        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date <= end))
-      }
-    } else {
-      end <- as.Date(max(s$date)) # to be used in ggplot later
-    }
+  } else {
+    end <- as.Date(max(s[[i]]$date)) # to be used in ggplot later
   }
   se <- getSceneinfo(names(xe[[1]]))
   
   # reorder scenes
   for(i in 1:length(xe)){
     xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
+    se[[i]] <- getSceneinfo(names(xe[[i]]))
   }
-  se <- getSceneinfo(names(xe[[1]]))
+  se <- se[[1]]
   
   # filter out scenes with too many NA's
   # done on 1st band, assuming mask has been applied uniformly
@@ -180,10 +156,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       readline("Press any key to continue to next screen: \n")
     }
   }
-  ## works, but still have to label dates!
-  
-  # TODO:
-  # 1. add option to plot one or more RE scenes at end of ts if they are available.
+
   
   if(ggplot){
     require(ggplot2)
