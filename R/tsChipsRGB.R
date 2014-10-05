@@ -88,11 +88,10 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   } else {
     end <- as.Date(max(s[[i]]$date)) # to be used in ggplot later
   }
-  se <- getSceneinfo(names(xe[[1]]))
   
   # reorder scenes
   for(i in 1:length(xe)){
-    xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
+    xe[[i]] <- raster::subset(xe[[i]], subset = order(se[[i]]$date))
     se[[i]] <- getSceneinfo(names(xe[[i]]))
   }
   se <- se[[1]]
