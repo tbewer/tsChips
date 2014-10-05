@@ -10,7 +10,6 @@
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param cores Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
