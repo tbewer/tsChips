@@ -10,6 +10,7 @@
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
+#' @param cores Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
@@ -62,38 +63,63 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   }
   
   # crop input bricks
-  xe <- vector("list", 3)
-  se <- list(s, s, s) # memory for # of scenes per band ts
-  for(i in 1:length(x)){
-    xe[[i]] <- crop(x[[i]], e)
-  }
+  if(cores > 1) {
+    if(cores > 3)
+      cores <- 3
+    require(doMC)
+    registerDoMC(cores = cores)
+    xe <- foreach(i = 1:length(x)) %dopar% {
+      crop(x[[i]], e)
+    }
+    # start and end dates
+    if(!is.null(start)){
+      start <- as.Date(start)
+      xe <- foreach(i = 1:length(xe)) %dopar% {
+        raster::subset(xe[[i]], subset = which(s$date >= start))
+      }
+    } else {
+      start <- as.Date(min(s$date)) # to be used in ggplot later
+    }
+    if(!is.null(end)){
+      end <- as.Date(end)
+      xe <- foreach(i = 1:length(x)) %dopar% {
+        raster::subset(xe[[i]], subset = which(s$date <= end))
+      }
+    } else {
+      end <- as.Date(max(s$date)) # to be used in ggplot later
+    }    
   
-  # start and end dates
-  if(!is.null(start)){
-    start <- as.Date(start)
-    for(i in 1:length(xe)){
-      xe[[i]] <- raster::subset(xe[[i]], subset = which(se[[i]]$date >= start))
-      se[[i]] <- getSceneinfo(names(xe))
-    }
   } else {
-    start <- as.Date(min(s$date)) # to be used in ggplot later
-  }
-  if(!is.null(end)){
-    end <- as.Date(end)
+    
+    xe <- vector("list", 3)
     for(i in 1:length(x)){
-      xe[[i]] <- raster::subset(xe[[i]], subset = which(se[[i]]$date <= end))
-      se[[i]] <- getSceneinfo(names(xe))
+      xe[[i]] <- crop(x[[i]], e)
     }
-  } else {
-    end <- as.Date(max(s$date)) # to be used in ggplot later
+    # start and end dates
+    if(!is.null(start)){
+      start <- as.Date(start)
+      for(i in 1:length(xe)){
+        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date >= start))
+      }
+    } else {
+      start <- as.Date(min(s$date)) # to be used in ggplot later
+    }
+    if(!is.null(end)){
+      end <- as.Date(end)
+      for(i in 1:length(x)){
+        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date <= end))
+      }
+    } else {
+      end <- as.Date(max(s$date)) # to be used in ggplot later
+    }
   }
+  se <- getSceneinfo(names(xe[[1]]))
   
   # reorder scenes
   for(i in 1:length(xe)){
-    xe[[i]] <- raster::subset(xe[[i]], subset = order(se[[i]]$date))
-    se[[i]] <- getSceneinfo(names(xe[[i]]))
+    xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
   }
-  se <- se[[1]]
+  se <- getSceneinfo(names(xe[[1]]))
   
   # filter out scenes with too many NA's
   # done on 1st band, assuming mask has been applied uniformly
@@ -154,7 +180,10 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       readline("Press any key to continue to next screen: \n")
     }
   }
-
+  ## works, but still have to label dates!
+  
+  # TODO:
+  # 1. add option to plot one or more RE scenes at end of ts if they are available.
   
   if(ggplot){
     require(ggplot2)
