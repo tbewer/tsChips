@@ -12,9 +12,9 @@
 #' @param nbks Numeric. Number of breaks in the colour map
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param hires Optional: Location of other hi-res imagery to suset and display, or list of raster objects (already in workspace) to subset and view.
-#' 
-#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
+#' @param export Logical. Export processed chips to workspace as a rasterBrick? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
+#'  
+#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. if \code{export = TRUE}, an object of class rasterBrick, and it both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
 #' 
 #' @author Ben DeVries
 #' 
@@ -62,7 +62,7 @@
 #' }
 
 
-tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE, hires = NULL) {
+tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE, export = FALSE) {
   
   # get sceneinfo
   s <- getSceneinfo(names(x))
@@ -166,10 +166,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     }
   }
   
-  # TODO:
-  # 1. add option to plot one or more RE scenes at end of ts if they are available.
-  # 2. make a ggplot time series plot and plot it on final screen and/or output from function
-  
+  # final ts plot
   if(ggplot){
     require(ggplot2)
     if(is.numeric(loc)){
@@ -182,8 +179,13 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     print(p)
   }
   
-  if(ggplot){
+  # decide what to return
+  if(ggplot & export){
+    return(list(tsChips = xe, plot = p))
+  } else if(ggplot & !export) {
     return(p)
+  } else if(!ggplot & export) {
+    return(xe)
   } else {
     return(NULL)
   }
