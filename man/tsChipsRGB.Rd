@@ -24,6 +24,8 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 
 \item{ggplot}{Logical. Produce a ggplot time series plot object?}
 
+\item{export}{Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.}
+
 \item{cores}{Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.}
 
 \item{textcol}{Character. Colour of text showing image date (can also be hexadecimal)}
@@ -31,7 +33,7 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 \item{...}{Arguments to be passed to \code{\link{plotRGB}}}
 }
 \value{
-\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
+\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
 }
 \description{
 Plot image TS chips from 3 raster bricks (as RGB composites) based on a location, area buffer, and time buffer

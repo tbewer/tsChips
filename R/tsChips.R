@@ -14,7 +14,7 @@
 #' @param ggplot Logical. Produce a ggplot time series plot object?
 #' @param export Logical. Export processed chips to workspace as a rasterBrick? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
 #'  
-#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. if \code{export = TRUE}, an object of class rasterBrick, and it both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
+#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, an object of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
 #' 
 #' @author Ben DeVries
 #' 
