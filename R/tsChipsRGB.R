@@ -13,6 +13,7 @@
 #' @param export Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
 #' @param cores Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
+#' @param show Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
 #' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
@@ -30,7 +31,7 @@
 #' 
 
 
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, cores = 1, textcol = "white", ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, cores = 1, textcol = "white", show = TRUE, ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -148,40 +149,45 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
     addfun <- function() NULL
   }
   
-  # plots on separate screens if needed
-  op <- par(mfrow = c(nr, nc))
-  pps <- nc * nr
-  nscreens <- ceiling(nlayers(xe[[1]]) / pps)
-  
-  for(i in seq(1, nlayers(xe[[1]]), by = pps)){
-    if((nlayers(xe[[1]]) - i) < pps){
-      xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
-      for(j in 1:nlayers(xes[[1]])){
-        b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
-        err <- try({
-          plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
-        }, silent = TRUE)
-        if(class(err) == "try-error")
-          plot.new()
+  if(show){
+    #### Plots
+    # plots on separate screens if needed
+    op <- par(mfrow = c(nr, nc))
+    pps <- nc * nr
+    nscreens <- ceiling(nlayers(xe[[1]]) / pps)
+    
+    for(i in seq(1, nlayers(xe[[1]]), by = pps)){
+      if((nlayers(xe[[1]]) - i) < pps){
+        xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
+        for(j in 1:nlayers(xes[[1]])){
+          b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
+          err <- try({
+            plotRGB(b, 1, 2, 3, addfun=addfun, ...)
+            text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
+          }, silent = TRUE)
+          if(class(err) == "try-error")
+            plot.new()
+        }
+        par(op)
+      } else {
+        xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:(i + pps - 1))))
+        for(j in 1:nlayers(xes[[1]])){
+          b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
+          err <- try({
+            plotRGB(b, 1, 2, 3, addfun=addfun, ...)
+            text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
+          }, silent = TRUE)
+          if(class(err) == "try-error")
+            plot.new()
+        }
+        
+        if(i < nlayers(xe[[1]]))
+          readline("Press any key to continue to next screen: \n")
       }
-      par(op)
-    } else {
-      xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:(i + pps - 1))))
-      for(j in 1:nlayers(xes[[1]])){
-        b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
-        err <- try({
-          plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
-        }, silent = TRUE)
-        if(class(err) == "try-error")
-          plot.new()
-      }
-      
-      if(i < nlayers(xe[[1]]))
-        readline("Press any key to continue to next screen: \n")
     }
+    ######
   }
+  
   
   # final ts plot
   if(ggplot){
