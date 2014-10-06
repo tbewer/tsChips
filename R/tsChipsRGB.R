@@ -30,7 +30,7 @@
 #' 
 
 
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, cores = 1, textcol = "white", ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, cores = 1, textcol = "white", ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
