@@ -24,8 +24,6 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 
 \item{ggplot}{Logical. Produce a ggplot time series plot object?}
 
-\item{cores}{Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.}
-
 \item{textcol}{Character. Colour of text showing image date (can also be hexadecimal)}
 
 \item{...}{Arguments to be passed to \code{\link{plotRGB}}}

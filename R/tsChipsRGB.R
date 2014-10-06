@@ -85,7 +85,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       se[[i]] <- getSceneinfo(names(xe))
     }
   } else {
-    end <- as.Date(max(s[[i]]$date)) # to be used in ggplot later
+    end <- as.Date(max(s$date)) # to be used in ggplot later
   }
   
   # reorder scenes
