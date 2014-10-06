@@ -4,8 +4,8 @@
 \title{Plot TS Chips (RGB version)}
 \usage{
 tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
-  percNA = 20, nc = 3, nr = 3, ggplot = FALSE, cores = 1,
-  textcol = "white", ...)
+  percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE,
+  cores = 1, textcol = "white", show = TRUE, ...)
 }
 \arguments{
 \item{xr/xg/xb}{RasterBrick. Image time series bricks representing the red, green and blue channel, respectively}
@@ -29,6 +29,8 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 \item{cores}{Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.}
 
 \item{textcol}{Character. Colour of text showing image date (can also be hexadecimal)}
+
+\item{show}{Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.}
 
 \item{...}{Arguments to be passed to \code{\link{plotRGB}}}
 }
