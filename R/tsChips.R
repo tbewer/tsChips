@@ -155,7 +155,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   pps <- nc * nr
   nscreens <- ceiling(nlayers(xe) / pps)
   for(i in seq(1, nlayers(xe), by = pps)){
-    if((nlayers(xe) - i) < pps){
+    if((nlayers(xe) - i) <= pps){
       xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
       par(op)
       plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
@@ -165,10 +165,6 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
       readline("Press any key to continue to next screen: \n")
     }
   }
-  
-  # TODO:
-  # 1. add option to plot one or more RE scenes at end of ts if they are available.
-  # 2. make a ggplot time series plot and plot it on final screen and/or output from function
   
   if(ggplot){
     require(ggplot2)

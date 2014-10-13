@@ -129,7 +129,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   nscreens <- ceiling(nlayers(xe[[1]]) / pps)
   
   for(i in seq(1, nlayers(xe[[1]]), by = pps)){
-    if((nlayers(xe[[1]]) - i) < pps){
+    if((nlayers(xe[[1]]) - i) <= pps){
       xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
       for(j in 1:nlayers(xes[[1]])){
         b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
