@@ -92,7 +92,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
     nas <- sapply(freq(xe[[1]]), FUN=function(x) as.numeric(x[is.na(x[, 1]), 2] / ncell(xe[[1]]) * 100))
     nas[which(sapply(nas, length) == 0)] <- 0
     nas <- unlist(nas)
-    for(i in 1:length(x)){
+    for(i in 1:length(xe)){
       if(percNA == 0){
         xe[[i]] <- raster::subset(xe[[i]], subset = which(nas == percNA))
       } else {
@@ -120,7 +120,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
         b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
         err <- try({
           plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xes[[1]])[j], col = textcol)
         }, silent = TRUE)
         if(class(err) == "try-error")
           plot.new()
@@ -132,7 +132,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
         b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
         err <- try({
           plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xes[[1]])[j], col = textcol)
         }, silent = TRUE)
         if(class(err) == "try-error")
           plot.new()
