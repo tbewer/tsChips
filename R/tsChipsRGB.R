@@ -11,7 +11,6 @@
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
 #' @param export Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
-#' @param cores Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
 #' @param show Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
@@ -30,8 +29,7 @@
 #' Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 #' 
 
-
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, cores = 1, textcol = "white", show = TRUE, ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, textcol = "white", ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -44,6 +42,9 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   # get sceneinfo
   s <- getSceneinfo(names(x$R))
   
+  # set z-dimensions of each brick
+  x <- lapply(x, FUN=function(x) setZ(x, s$date))
+  
   # reformat buffer using image resolution
   buff <- buff * res(x$R)[1]
   
@@ -53,7 +54,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
   } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
-    if(length(loc) > 1){
+    if(nrow(loc) > 1){
       warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
     }
@@ -65,71 +66,33 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   }
   
   # crop input bricks
-  if(cores > 1) {
-    if(cores > 3)
-      cores <- 3
-    require(doMC)
-    registerDoMC(cores = cores)
-    xe <- foreach(i = 1:length(x)) %dopar% {
-      crop(x[[i]], e)
-    }
-    # start and end dates
-    if(!is.null(start)){
-      start <- as.Date(start)
-      xe <- foreach(i = 1:length(xe)) %dopar% {
-        raster::subset(xe[[i]], subset = which(s$date >= start))
-      }
-    } else {
-      start <- as.Date(min(s$date)) # to be used in ggplot later
-    }
-    if(!is.null(end)){
-      end <- as.Date(end)
-      xe <- foreach(i = 1:length(x)) %dopar% {
-        raster::subset(xe[[i]], subset = which(s$date <= end))
-      }
-    } else {
-      end <- as.Date(max(s$date)) # to be used in ggplot later
-    }    
+  xe <- lapply(x, FUN=function(x) crop(x, e))
   
+  # start and end dates
+  if(!is.null(start)){
+    start <- as.Date(start)
+    xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = which(getZ(x) >= start)))
+    xe <- lapply(xe, FUN=function(x) setZ(x, getSceneinfo(names(x))$date))
   } else {
-    
-    xe <- vector("list", 3)
-    for(i in 1:length(x)){
-      xe[[i]] <- crop(x[[i]], e)
-    }
-    # start and end dates
-    if(!is.null(start)){
-      start <- as.Date(start)
-      for(i in 1:length(xe)){
-        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date >= start))
-      }
-    } else {
-      start <- as.Date(min(s$date)) # to be used in ggplot later
-    }
-    if(!is.null(end)){
-      end <- as.Date(end)
-      for(i in 1:length(x)){
-        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date <= end))
-      }
-    } else {
-      end <- as.Date(max(s$date)) # to be used in ggplot later
-    }
+    start <- as.Date(min(getZ(xe[[1]]))) # to be used in ggplot later
   }
-  se <- getSceneinfo(names(xe[[1]]))
+  
+  if(!is.null(end)){
+    end <- as.Date(end)
+    xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = which(getZ(x) <= end)))
+    xe <- lapply(xe, FUN=function(x) setZ(x, getSceneinfo(names(x))$date))
+  } else {
+    end <- as.Date(max(getZ(xe[[1]]))) # to be used in ggplot later
+  }  
   
   # reorder scenes
-  for(i in 1:length(xe)){
-    xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
-  }
-  se <- getSceneinfo(names(xe[[1]]))
+  xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = order(getZ(x))))
   
   # filter out scenes with too many NA's
   # done on 1st band, assuming mask has been applied uniformly
   if(percNA < 100){
-    nas <- sapply(freq(xe[[1]]), FUN=function(x) as.numeric(x[is.na(x[, 1]), 2] / ncell(xe[[1]]) * 100))
-    nas[which(sapply(nas, length) == 0)] <- 0
-    nas <- unlist(nas)
-    for(i in 1:length(x)){
+    nas <- freq(xe[[1]], value = NA) / ncell(xe[[1]]) * 100
+    for(i in 1:length(xe)){
       if(percNA == 0){
         xe[[i]] <- raster::subset(xe[[i]], subset = which(nas == percNA))
       } else {
@@ -138,10 +101,6 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
     }
   }
   
-  # final sceneinfo data.frame
-  se <- getSceneinfo(names(xe[[1]]))
-  
-  
   # function to add spatial data (if present)
   if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
     addfun <- function() plot(loc, add=TRUE)
@@ -149,43 +108,37 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
     addfun <- function() NULL
   }
   
-  if(show){
-    #### Plots
-    # plots on separate screens if needed
-    op <- par(mfrow = c(nr, nc))
-    pps <- nc * nr
-    nscreens <- ceiling(nlayers(xe[[1]]) / pps)
-    
-    for(i in seq(1, nlayers(xe[[1]]), by = pps)){
-      if((nlayers(xe[[1]]) - i) < pps){
-        xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
-        for(j in 1:nlayers(xes[[1]])){
-          b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
-          err <- try({
-            plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-            text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
-          }, silent = TRUE)
-          if(class(err) == "try-error")
-            plot.new()
-        }
-        par(op)
-      } else {
-        xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:(i + pps - 1))))
-        for(j in 1:nlayers(xes[[1]])){
-          b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
-          err <- try({
-            plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-            text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
-          }, silent = TRUE)
-          if(class(err) == "try-error")
-            plot.new()
-        }
-        
-        if(i < nlayers(xe[[1]]))
-          readline("Press any key to continue to next screen: \n")
+  # plots on separate screens if needed
+  op <- par(mfrow = c(nr, nc))
+  pps <- nc * nr
+  nscreens <- ceiling(nlayers(xe[[1]]) / pps)
+  
+  for(i in seq(1, nlayers(xe[[1]]), by = pps)){
+    if((nlayers(xe[[1]]) - i) <= pps){
+      xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
+      for(j in 1:nlayers(xes[[1]])){
+        b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
+        err <- try({
+          plotRGB(b, 1, 2, 3, addfun=addfun, ...)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xes[[1]])[j], col = textcol)
+        }, silent = TRUE)
+        if(class(err) == "try-error")
+          plot.new()
       }
+      par(op)
+    } else {
+      xes <- lapply(xe, FUN=function(y) raster::subset(y, subset = c(i:(i + pps - 1))))
+      for(j in 1:nlayers(xes[[1]])){
+        b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
+        err <- try({
+          plotRGB(b, 1, 2, 3, addfun=addfun, ...)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xes[[1]])[j], col = textcol)
+        }, silent = TRUE)
+        #if(class(err) == "try-error")
+         # plot.new()
+      }
+      readline("Press any key to see next screen:\n")
     }
-    ######
   }
   
   
