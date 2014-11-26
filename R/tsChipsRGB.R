@@ -10,7 +10,6 @@
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param cores Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
@@ -29,7 +28,7 @@
 #' 
 
 
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, cores = 1, textcol = "white", ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, textcol = "white", ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -42,6 +41,9 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   # get sceneinfo
   s <- getSceneinfo(names(x$R))
   
+  # set z-dimensions of each brick
+  x <- lapply(x, FUN=function(x) setZ(x, s$date))
+  
   # reformat buffer using image resolution
   buff <- buff * res(x$R)[1]
   
@@ -51,7 +53,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
   } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
-    if(length(loc) > 1){
+    if(nrow(loc) > 1){
       warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
     }
@@ -63,39 +65,26 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   }
   
   # crop input bricks
-  xe <- vector("list", 3)
-  se <- list(s, s, s) # memory for # of scenes per band ts
-  for(i in 1:length(x)){
-    xe[[i]] <- crop(x[[i]], e)
-  }
+  xe <- lapply(x, FUN=function(x) crop(x, e))
   
   # start and end dates
   if(!is.null(start)){
     start <- as.Date(start)
-    for(i in 1:length(xe)){
-      xe[[i]] <- raster::subset(xe[[i]], subset = which(se[[i]]$date >= start))
-      se[[i]] <- getSceneinfo(names(xe))
-    }
+    xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = which(getZ(x) >= start)))
   } else {
-    start <- as.Date(min(s$date)) # to be used in ggplot later
+    start <- as.Date(min(getZ(xe[[1]]))) # to be used in ggplot later
   }
+  
   if(!is.null(end)){
     end <- as.Date(end)
-    for(i in 1:length(x)){
-      xe[[i]] <- raster::subset(xe[[i]], subset = which(se[[i]]$date <= end))
-      se[[i]] <- getSceneinfo(names(xe))
-    }
+    xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = which(getZ(x) <= end)))
   } else {
-    end <- as.Date(max(s[[i]]$date)) # to be used in ggplot later
+    end <- as.Date(max(getZ(xe[[1]]))) # to be used in ggplot later
   }
-  se <- getSceneinfo(names(xe[[1]]))
   
   # reorder scenes
-  for(i in 1:length(xe)){
-    xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
-    se[[i]] <- getSceneinfo(names(xe[[i]]))
-  }
-  se <- se[[1]]
+  xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = order(getZ(x))))
+
   
   # filter out scenes with too many NA's
   # done on 1st band, assuming mask has been applied uniformly
@@ -111,10 +100,6 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       }
     }
   }
-  
-  # final sceneinfo data.frame
-  se <- getSceneinfo(names(xe[[1]]))
-  
   
   # function to add spatial data (if present)
   if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
