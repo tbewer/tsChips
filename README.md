@@ -9,3 +9,5 @@ To install this package, enter the following (requires Git and the devtools pack
 library(devtools)
 install_github("bendv/tsChips")
 ```
+
+This package was designed and tested in RStudio.
